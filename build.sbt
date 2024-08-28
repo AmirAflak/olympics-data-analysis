@@ -8,6 +8,8 @@ lazy val root = project
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test,
     libraryDependencies += "org.apache.spark" %% "spark-core" % "3.5.1",
     libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.5.1",
+    libraryDependencies += "org.postgresql" % "postgresql" % "42.7.3",
+
 
     fork := true,
     javaOptions += "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
