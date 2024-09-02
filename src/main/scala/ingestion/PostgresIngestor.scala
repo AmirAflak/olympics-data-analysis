@@ -33,4 +33,10 @@ class PostgresIngestor(sparkSession: SparkSession) {
       .option("dbtable", tableName)
       .save()
   }
+
+  def ingest(df: DataFrame, tableName: String, postgresUrl: String, postgresUser: String, postgresPassword: String): Unit = {
+    val schema = df.schema.fields.map(field => s"${field.name} ${field.dataType.simpleString}").mkString(", ")
+    createTable(tableName, postgresUrl, postgresUser, postgresPassword, schema)
+    writeTable(df, tableName, postgresUrl, postgresUser, postgresPassword)
+  }
 }
