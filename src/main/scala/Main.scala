@@ -1,27 +1,31 @@
-import cleaners.BiosCleaner
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
-
+import ingestion.PostgresIngestor
+import loaders.ResultsLoader
+import loaders.BiosLoader
+import cleaners.ResultsCleaner
+import cleaners.BiosCleaner
 
 object Main {
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]) {
     val spark = SparkSession.builder
-      .appName("BiosCleaner")
+      .appName("Main")
       .master("local[2]")
       .config("spark.log.level", "ERROR")
+      .config("spark.sql.catalogImplementation","hive")
       .getOrCreate()
 
-    val bios = spark.read.format("parquet")
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .load("/home/mehrdad/olympic-data-analysis/datasets/bios.parquet")
+    val resultsLoader = new ResultsLoader(spark)
+    val resultsDF = resultsLoader.loadResults()
 
-    val cleaner = new BiosCleaner(spark)
-    val dfCleaned = cleaner.cleanBios(bios)
+    val resultsCleaner = new ResultsCleaner(spark)
+    val cleanedResultsDF = resultsCleaner.cleanResults(resultsDF)
 
-    dfCleaned.show(5)
+    val postgresIngestor = new PostgresIngestor(spark)
+    val postgresUrl = "jdbc:postgresql://localhost:5438/postgres"
+    val postgresUser = "postgres"
+    val postgresPassword = "postgres"
+    val tableName = "results"
 
-    spark.stop()
+    postgresIngestor.ingest(cleanedResultsDF, tableName, postgresUrl, postgresUser, postgresPassword)
   }
 }
-
-
