@@ -79,7 +79,7 @@ private def convertToDateTime(df: Dataset[Row]): Dataset[Row] = {
   }
 
   private def extractLocations(df: Dataset[Row]): Dataset[Row] = {
-    val locationPattern = """in ([\w\p{L}\s()-]+), ([\w\p{L}\s-]+) $$(\w+)$$"""
+    val locationPattern = """in ([\w\p{L}\s()-]+), ([\w\p{L}\s-]+) \((\w+)\)"""
     df.withColumn("born_city", regexp_extract(col("Born"), locationPattern, 1))
       .withColumn("born_region", regexp_extract(col("Born"), locationPattern, 2))
       .withColumn("born_country", regexp_extract(col("Born"), locationPattern, 3))
