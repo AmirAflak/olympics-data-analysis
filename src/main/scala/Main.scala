@@ -15,10 +15,16 @@ object Main {
       .getOrCreate()
 
     val resultsLoader = new ResultsLoader(spark)
+    val biosLoader = new BiosLoader(spark)
+
     val resultsDF = resultsLoader.loadResults()
+    val biosDF = biosLoader.loadBios()
 
     val resultsCleaner = new ResultsCleaner(spark)
+    val biosCleaner = new BiosCleaner(spark)
+
     val cleanedResultsDF = resultsCleaner.cleanResults(resultsDF)
+    val cleanedBiosDF = biosCleaner.cleanBios(biosDF)
 
     val postgresIngestor = new PostgresIngestor(spark)
     val postgresUrl = "jdbc:postgresql://localhost:5438/postgres"
@@ -26,6 +32,10 @@ object Main {
     val postgresPassword = "postgres"
     val tableName = "results"
 
-    postgresIngestor.ingest(cleanedResultsDF, tableName, postgresUrl, postgresUser, postgresPassword)
+    val resultsTableName = "results"
+    postgresIngestor.ingest(cleanedResultsDF, resultsTableName, postgresUrl, postgresUser, postgresPassword)
+
+    val biosTableName = "bios"
+    postgresIngestor.ingest(cleanedBiosDF, biosTableName, postgresUrl, postgresUser, postgresPassword)
   }
 }
