@@ -7,6 +7,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.Row
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import java.util.Locale
 import java.sql.Date
 
@@ -45,20 +46,32 @@ class BiosCleaner(sparkSession: SparkSession) {
       .withColumn("died_date", regexp_extract(col("Died"), datePattern, 0))
   }
 
-  private def convertToDateTime(df: Dataset[Row]): Dataset[Row] = {
-    val parseDate = udf((date: String) => {
-      if (date == null) {
-        null
-      } else {
-        val df = DateTimeFormat.forPattern("dd MMMM yyyy").withLocale(Locale.US)
+private def convertToDateTime(df: Dataset[Row]): Dataset[Row] = {
+  val parseDate = udf((date: String) => {
+    if (date == null || date.trim.isEmpty) {
+      null
+    } else {
+      try {
+        val df = DateTimeFormat.forPattern("dd MMMM yyyy").withLocale(Locale.UK).withZone(DateTimeZone.UTC)
         val dt = DateTime.parse(date, df)
         new Date(dt.getMillis)
+      } catch {
+        case e: IllegalArgumentException =>
+          try {
+            val df = DateTimeFormat.forPattern("dd MMM yyyy").withLocale(Locale.US).withZone(DateTimeZone.UTC)
+            val dt = DateTime.parse(date, df)
+            new Date(dt.getMillis)
+          } catch {
+            case e: Exception =>
+              null
+          }
       }
-    })
+    }
+  })
 
-    df.withColumn("born_date", parseDate(col("born_date")))
-      .withColumn("died_date", parseDate(col("died_date")))
-  }
+  df.withColumn("born_date", parseDate(col("born_date")))
+    .withColumn("died_date", parseDate(col("died_date")))
+}
 
   private def convertToTimestamp(df: Dataset[Row]): Dataset[Row] = {
     df.withColumn("born_date", unix_timestamp(col("born_date"), "yyyy-MM-dd").cast("timestamp"))
