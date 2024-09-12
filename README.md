@@ -3,7 +3,7 @@
 
 ## Project Overview
 
-This project implements an ETL pipeline using **Spark Scala** to process Olympic athlete data. After loading the data into a PostgreSQL database, a series of SQL analysis queries were performed to generate insights into athlete performances, country-wise statistics, and other key metrics.
+This project implements an ETL pipeline using **Apache Spark** to process Olympic athlete data. After loading the data into a PostgreSQL database, a series of SQL analysis queries were performed to generate insights into athlete performances, country-wise statistics, and other key metrics.
 
 
 ## Analysis Section
